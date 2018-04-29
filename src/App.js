@@ -9,6 +9,7 @@ class App extends Component {
       ways: 0
     };
     this.createAMap = this.createAMap.bind(this);
+    this.nextPosition = this.nextPosition.bind(this);
   }
   createAMap() {
     let newMap = [[], [], [], [], [], [], []];
@@ -21,6 +22,39 @@ class App extends Component {
     }
     this.setState({ map: newMap });
   }
+
+  nextPosition(currX, currY, currVal) {
+    let newPos = [];
+    switch (currVal.keyCode) {
+      case 60:
+        newPos.push({ y: currY, x: currX - 1 });
+        break;
+      case 62:
+        newPos.push({ y: currY, x: currX + 1 });
+        break;
+      case 94:
+        newPos.push({ y: currY - 1, x: currX });
+        break;
+      case 86:
+        newPos.push({ y: currY + 1, x: currX });
+        break;
+      case 124:
+        newPos.push({ y: currY - 1, x: currX }, { y: currY + 1, x: currX });
+      case 173:
+        newPos.push({ y: currY, x: currX - 1 }, { y: currY, x: currX + 1 });
+      case 32:
+        newPos.push(
+          { y: currY, x: currX - 1 },
+          { y: currY, x: currX + 1 },
+          { y: currY - 1, x: currX },
+          { y: currY + 1, x: currX }
+        );
+      default:
+        return;
+    }
+    return newPos;
+  }
+
   render() {
     const { countStart, ways } = this.state;
     return (
