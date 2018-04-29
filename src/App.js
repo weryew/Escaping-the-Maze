@@ -1,25 +1,45 @@
-import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { Component } from "react";
+import "./App.css";
 
 class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      name: 'Jane Doe',
+      map: [[], [], [], [], [], [], []],
+      ways: 0
     };
+    this.createAMap = this.createAMap.bind(this);
+  }
+  createAMap() {
+    let newMap = [[], [], [], [], [], [], []];
+    for (let i = 1; i < 6; i++) {
+      for (let j = 1; j < 6; j++) {
+        newMap[i].push(
+          prompt(`Enter the character at the index ( ${i}, ${j} )`)
+        );
+      }
+    }
+    this.setState({ map: newMap });
   }
   render() {
+    const { countStart, ways } = this.state;
     return (
       <div className="App">
         <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <h1 className="App-title">Welcome to React</h1>
+          <h1 className="App-title">Escape the Maze</h1>
         </header>
-        <p className="App-intro">
-          To get started, edit <code>src/App.js</code> and save to reload.
-          Hello { this.state.name }
-        </p>
+        {!countStart && (
+          <div>
+            <p className="App-intro">First, you should define your map!</p>
+            <button onClick={this.createAMap}>Create a map</button>
+            <br />
+          </div>
+        )}
+        {countStart && (
+          <div>
+            <h4>The number of ways to exit the map is: {ways} </h4>
+          </div>
+        )}
       </div>
     );
   }
