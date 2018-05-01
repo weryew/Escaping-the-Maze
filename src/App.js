@@ -5,75 +5,100 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      map: [[], [], [], [], [], [], []],
-      ways: 0
+      map: [
+        [null, null, null, null, null, null, null],
+        [null, "v", "?", "|", " ", "<", null],
+        [null, "<", " ", " ", "?", " ", null],
+        [null, "v", " ", "?", "|", ">", null],
+        [null, "v", " ", " ", "-", " ", null],
+        [null, "v", " ", "^", "?", "<", null],
+        [null, null, null, null, null, null, null]
+      ],
+      startX: 1,
+      startY: 1,
+      lastX: null,
+      lastY: null,
+      currX: null,
+      currY: null,
+      ways: 0,
+      finish: false
     };
-    this.createAMap = this.createAMap.bind(this);
     this.nextPosition = this.nextPosition.bind(this);
-  }
-  createAMap() {
-    let newMap = [[], [], [], [], [], [], []];
-    for (let i = 1; i < 6; i++) {
-      for (let j = 1; j < 6; j++) {
-        newMap[i].push(
-          prompt(`Enter the character at the index ( ${i}, ${j} )`)
-        );
-      }
-    }
-    this.setState({ map: newMap });
+    this.newWay = this.newWay.bind(this);
+    this.start = this.start.bind(this);
   }
 
-  nextPosition(currX, currY, currVal) {
-    let newPos = [];
-    switch (currVal.keyCode) {
-      case 60:
-        newPos.push({ y: currY, x: currX - 1 });
+  nextPosition(X, Y) {
+    let currVal = this.state.map[Y][X];
+    switch (currVal) {
+      case "<":
+        this.setState({ currX: X - 1 });
         break;
-      case 62:
-        newPos.push({ y: currY, x: currX + 1 });
+      case ">":
+        this.setState({ currX: X + 1 });
         break;
-      case 94:
-        newPos.push({ y: currY - 1, x: currX });
+      case "^":
+        this.setState({ currY: Y - 1 });
         break;
-      case 86:
-        newPos.push({ y: currY + 1, x: currX });
+      case "v":
+        this.setState({ currY: Y + 1 });
         break;
-      case 124:
-        newPos.push({ y: currY - 1, x: currX }, { y: currY + 1, x: currX });
-      case 173:
-        newPos.push({ y: currY, x: currX - 1 }, { y: currY, x: currX + 1 });
-      case 32:
-        newPos.push(
-          { y: currY, x: currX - 1 },
-          { y: currY, x: currX + 1 },
-          { y: currY - 1, x: currX },
-          { y: currY + 1, x: currX }
-        );
+      case "|":
+        this.setState({ currY: Y - 1 || Y - 1 });
+        break;
+      case "-":
+        this.setState({ currX: X + 1 || X - 1 });
+        break;
+      case " ":
+        break;
       default:
         return;
     }
-    return newPos;
+    this.setState({
+      lastX: X,
+      lastY: Y
+    });
+  }
+
+  newWay(currX, currY) {
+    return currX === 0 || currX === 6 || currY === 0 || currY === 6
+      ? this.setState({
+          ways: this.state.ways + 1,
+          finish: true,
+          currX: this.state.startX,
+          currY: this.state.startY
+        })
+      : this.nextPosition(currX, currY);
+  }
+
+  start() {
+    this.setState({
+      currX: this.state.startX,
+      currY: this.state.startY
+    });
+  }
+
+  componentWillMount() {
+    this.start();
+  }
+
+  componentDidMount() {
+    setInterval(() => {
+      !this.state.finish && this.newWay(this.state.currX, this.state.currY);
+    }, 0);
   }
 
   render() {
-    const { countStart, ways } = this.state;
     return (
       <div className="App">
         <header className="App-header">
           <h1 className="App-title">Escape the Maze</h1>
         </header>
-        {!countStart && (
-          <div>
-            <p className="App-intro">First, you should define your map!</p>
-            <button onClick={this.createAMap}>Create a map</button>
-            <br />
-          </div>
-        )}
-        {countStart && (
-          <div>
-            <h4>The number of ways to exit the map is: {ways} </h4>
-          </div>
-        )}
+        <div>
+          <p>X: {this.state.currX} </p>
+          <p>Y: {this.state.currY} </p>
+          <p>The number of ways to exit the map is: {this.state.ways} </p>
+        </div>
       </div>
     );
   }
