@@ -8,18 +8,16 @@ class App extends Component {
       map: [
         [null, null, null, null, null, null, null],
         [null, "v", "?", "|", " ", "<", null],
-        [null, "<", " ", " ", "?", " ", null],
-        [null, "v", " ", "?", "|", ">", null],
-        [null, "v", " ", " ", "-", " ", null],
+        [null, "-", " ", "v", "?", " ", null],
+        [null, "<", "<", "<", "|", ">", null],
+        [null, "v", "", " ", "-", " ", null],
         [null, "v", " ", "^", "?", "<", null],
         [null, null, null, null, null, null, null]
       ],
-      startX: 1,
-      startY: 1,
+      startPos: [[1, 1]],
+      currPos: null,
       lastX: null,
       lastY: null,
-      currX: null,
-      currY: null,
       ways: 0,
       finish: false
     };
@@ -27,29 +25,47 @@ class App extends Component {
     this.newWay = this.newWay.bind(this);
     this.start = this.start.bind(this);
   }
-
+  start() {
+    this.setState({
+      currPos: this.state.startPos
+    });
+  }
   nextPosition(X, Y) {
+    let newMap;
     let currVal = this.state.map[Y][X];
+    let arrPos = [];
     switch (currVal) {
       case "<":
-        this.setState({ currX: X - 1 });
+        arrPos.push([X - 1, Y]);
+        this.setState({ currPos: arrPos.slice(0) });
         break;
       case ">":
-        this.setState({ currX: X + 1 });
+        arrPos.push([X + 1, Y]);
+        this.setState({ currPos: arrPos.slice(0) });
         break;
       case "^":
-        this.setState({ currY: Y - 1 });
+        arrPos.push([X, Y - 1]);
+        this.setState({ currPos: arrPos.slice(0) });
         break;
       case "v":
-        this.setState({ currY: Y + 1 });
-        break;
-      case "|":
-        this.setState({ currY: Y - 1 || Y - 1 });
-        break;
-      case "-":
-        this.setState({ currX: X + 1 || X - 1 });
+        arrPos.push([X, Y + 1]);
+        this.setState({ currPos: arrPos.slice(0) });
         break;
       case " ":
+        newMap = this.state.map.slice();
+        newMap[Y][X] = newMap[this.state.lastY][this.state.lastX];
+        break;
+      case "|":
+        arrPos.push([X, Y + 1], [X, Y - 1]);
+        this.setState({ currPos: arrPos.slice(0) });
+        break;
+      case "-":
+        arrPos.push([X + 1, Y], [X - 1, Y]);
+        this.setState({ currPos: arrPos.slice(0) });
+        break;
+      case "?":
+        arrPos.push([X + 1, Y], [X - 1, Y], [X, Y + 1], [X, Y - 1]);
+        this.setState({ currPos: arrPos.slice(0) });
         break;
       default:
         return;
@@ -59,35 +75,23 @@ class App extends Component {
       lastY: Y
     });
   }
-
-  newWay(currX, currY) {
-    return currX === 0 || currX === 6 || currY === 0 || currY === 6
+  newWay(X, Y) {
+    return X === 0 || X === 6 || Y === 0 || Y === 6
       ? this.setState({
           ways: this.state.ways + 1,
-          finish: true,
-          currX: this.state.startX,
-          currY: this.state.startY
+          finish: true
         })
-      : this.nextPosition(currX, currY);
+      : this.nextPosition(X, Y);
   }
-
-  start() {
-    this.setState({
-      currX: this.state.startX,
-      currY: this.state.startY
-    });
-  }
-
   componentWillMount() {
     this.start();
   }
-
   componentDidMount() {
     setInterval(() => {
-      !this.state.finish && this.newWay(this.state.currX, this.state.currY);
-    }, 0);
+      !this.state.finish &&
+        this.newWay(this.state.currPos[0][0], this.state.currPos[0][1]);
+    }, 500);
   }
-
   render() {
     return (
       <div className="App">
@@ -95,8 +99,8 @@ class App extends Component {
           <h1 className="App-title">Escape the Maze</h1>
         </header>
         <div>
-          <p>X: {this.state.currX} </p>
-          <p>Y: {this.state.currY} </p>
+          <p>X: {this.state.currPos[0][0]} </p>
+          <p>Y: {this.state.currPos[0][1]} </p>
           <p>The number of ways to exit the map is: {this.state.ways} </p>
         </div>
       </div>
